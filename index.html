@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Cartas Compromiso Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #ec4899;
+            --bg-glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-container {
+            max-width: 650px;
+            margin: 2rem auto;
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            flex-grow: 0;
+        }
+
+        .screen { padding: 2.5rem; }
+
+        /* Estilo Dinámico de Inputs */
+        input, select, textarea {
+            width: 100%;
+            padding: 0.85rem 1.2rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            background-color: #ffffff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+            background-color: #fcfaff;
+        }
+
+        /* Botones dinámicos */
+        .btn {
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active { transform: scale(0.95); }
+
+        .btn-next { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; }
+        .btn-save { background: linear-gradient(to right, #10b981, #3b82f6); color: white; }
+        .btn-clear { background: #fee2e2; color: #ef4444; }
+        .btn-exit { background: #f1f5f9; color: #64748b; }
+
+        /* Cláusulas con diseño juvenil */
+        .checkbox-item {
+            background: white;
+            border: 2px solid #f1f5f9;
+            padding: 1rem;
+            border-radius: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .checkbox-item:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Configuración de Hoja para Imagen */
+        #letter-to-image {
+            width: 210mm;
+            height: 297mm;
+            padding: 10mm 20mm 10mm 20mm;
+            background: white;
+            position: absolute;
+            top: -10000px;
+            left: -10000px;
+            display: flex;
+            flex-direction: column;
+            color: black;
+            font-family: 'Times New Roman', serif;
+            font-size: 11pt;
+            line-height: 1.2;
+        }
+
+        .justified { text-align: justify; }
+
+        h2 { font-weight: 800; }
+
+        /* Firma del desarrollador */
+        .dev-signature {
+            text-align: center;
+            padding-bottom: 2rem;
+            color: #800000;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="page-container">
+    <!-- PANTALLA 1: DATOS ESCUELA -->
+    <div id="screen-school" class="screen space-y-6">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Configuración Escolar</h2>
+            <p class="text-slate-500 text-sm mt-1">Ingresa los datos básicos del centro educativo</p>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-slate-200">
+                <label class="font-bold text-xs uppercase text-slate-500 mb-2 block">Logotipo Institucional</label>
+                <input type="file" id="school-logo" accept="image/*" class="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+            </div>
+
+            <input type="text" id="school-name" placeholder="NOMBRE DE LA ESCUELA" class="text-center font-bold uppercase placeholder:font-normal">
+            
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="school-key" placeholder="Clave C.T.">
+                <input type="text" id="school-zone" placeholder="Zona Escolar">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="school-sector" placeholder="Sector Escolar">
+                <select id="school-shift">
+                    <option value="">Turno...</option>
+                    <option>Matutino</option>
+                    <option>Vespertino</option>
+                    <option>Nocturno</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <select id="school-cycle" class="font-semibold"></select>
+                <div class="flex gap-2">
+                    <select id="school-grade" class="font-semibold">
+                        <option value="">Grado</option>
+                        <option>PRIMERO</option><option>SEGUNDO</option>
+                        <option>TERCERO</option><option>CUARTO</option>
+                        <option>QUINTO</option><option>SEXTO</option>
+                    </select>
+                    <select id="school-group" class="font-semibold">
+                        <option value="">Grupo</option>
+                        <option>A</option><option>B</option><option>C</option><option>D</option>
+                    </select>
+                </div>
+            </div>
+
+            <input type="text" id="school-teacher" placeholder="Nombre del Maestro(a)">
+            
+            <div class="bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-slate-200">
+                <label class="font-bold text-xs uppercase text-slate-500 mb-2 block">Firma del Maestro (Digitalizada)</label>
+                <input type="file" id="teacher-signature" accept="image/*" class="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+            </div>
+
+            <input type="text" id="school-director" placeholder="Nombre del Director(a)">
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 pt-2">
+            <button onclick="nextScreen('screen-students')" class="btn btn-next py-4">Siguiente Paso</button>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="clearInputs('screen-school')" class="btn btn-clear">Limpiar</button>
+                <button onclick="window.close()" class="btn btn-exit">Salir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: ALUMNOS -->
+    <div id="screen-students" class="hidden screen space-y-6">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600">Gestión de Alumnos</h2>
+            <p class="text-slate-500 text-sm mt-1">Registra a los estudiantes y sus tutores</p>
+        </div>
+        
+        <div class="grid grid-cols-1 gap-4 bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100">
+            <div>
+                <label class="text-xs font-bold text-emerald-700 ml-2 uppercase">Nombre Completo del Alumno</label>
+                <input type="text" id="student-name" placeholder="Ej. Juan Pérez" class="border-emerald-200 focus:border-emerald-500">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-emerald-700 ml-2 uppercase">Nombre del Padre o Tutor</label>
+                <input type="text" id="parent-name" placeholder="Ej. María Pérez" class="border-emerald-200 focus:border-emerald-500">
+            </div>
+            <button onclick="saveStudent()" class="btn btn-save w-full mt-2">Guardar Registro</button>
+        </div>
+
+        <div class="space-y-3">
+            <label class="font-bold text-slate-700 text-sm flex items-center gap-2">
+                <span class="bg-slate-200 w-6 h-6 rounded-full flex items-center justify-center text-xs">i</span>
+                Alumnos Registrados:
+            </label>
+            <select id="student-list" size="6" class="h-48 border-slate-200 bg-white shadow-inner"></select>
+            <button onclick="deleteStudent()" class="text-red-500 text-xs font-bold hover:underline ml-auto block">Eliminar seleccionado</button>
+        </div>
+
+        <div class="flex gap-4 pt-2">
+            <button onclick="nextScreen('screen-school')" class="btn btn-exit flex-1">Atrás</button>
+            <button onclick="nextScreen('screen-letter')" class="btn btn-next flex-1">Configurar Carta</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: CARTA COMPROMISO -->
+    <div id="screen-letter" class="hidden screen space-y-6">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-rose-600">Personalizar Carta</h2>
+            <p class="text-slate-500 text-sm mt-1">Define las fechas y cláusulas de compromiso</p>
+        </div>
+        
+        <div class="bg-rose-50/50 p-5 rounded-3xl border border-rose-100 space-y-4">
+            <div>
+                <label class="font-bold text-rose-800 text-xs uppercase block mb-2 ml-2">Lugar y Fecha del Documento</label>
+                <div class="flex gap-2 items-center bg-white p-2 rounded-xl border border-rose-100">
+                    <span class="text-sm font-semibold text-slate-500 pl-2">Acapulco Gro. A</span>
+                    <input type="date" id="letter-date" class="border-none p-2 focus:ring-0">
+                </div>
+            </div>
+
+            <div>
+                <label class="font-bold text-rose-800 text-xs uppercase block mb-2 ml-2">Seleccionar Alumno</label>
+                <select id="letter-student-select" class="font-bold border-rose-200 text-rose-700"></select>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <p class="font-bold text-slate-700 text-sm flex items-center gap-2">
+                <span class="bg-indigo-100 text-indigo-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">!</span>
+                Cláusulas y Reportes:
+            </p>
+            
+            <div class="checkbox-item bg-red-50 border-red-100 hover:border-red-300">
+                <input type="checkbox" id="check-agresiva">
+                <div class="flex-grow">
+                    <p class="font-bold text-red-700">Reporte de Conducta Agresiva</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <label class="text-xs text-red-600">Llamada de atención n°:</label>
+                        <select id="num-llamada" class="py-1 px-2 text-xs w-20 border-red-200">
+                            <script>for(let i=1;i<=10;i++) document.write(`<option>${i}</option>`)</script>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="max-h-56 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-slate-200">
+                <label class="checkbox-item"><input type="checkbox" checked value="c1"><span><b>C1.</b> Respeto y disciplina hacia la comunidad escolar.</span></label>
+                <label class="checkbox-item"><input type="checkbox" checked value="c2"><span><b>C2.</b> Cumplimiento estricto del reglamento.</span></label>
+                <label class="checkbox-item"><input type="checkbox" checked value="c3"><span><b>C3.</b> Responsabilidad en el desempeño académico.</span></label>
+                <label class="checkbox-item"><input type="checkbox" checked value="c4"><span><b>C4.</b> Puntualidad y asistencia diaria.</span></label>
+                <label class="checkbox-item"><input type="checkbox" checked value="c5"><span><b>C5.</b> Seguimiento y supervisión del tutor.</span></label>
+                <label class="checkbox-item"><input type="checkbox" checked value="c6"><span><b>C6.</b> Aceptación de medidas correctivas.</span></label>
+                <label class="checkbox-item"><input type="checkbox" checked value="c7"><span><b>C7.</b> Asistencia obligatoria a citatorios.</span></label>
+            </div>
+        </div>
+
+        <button onclick="generateImage()" class="btn btn-save w-full text-lg py-5 shadow-xl hover:shadow-2xl active:shadow-none">
+            Generar Carta en Imagen
+        </button>
+        <button onclick="nextScreen('screen-students')" class="btn btn-exit w-full">Regresar</button>
+    </div>
+</div>
+
+<div class="dev-signature">
+    Desarrolló: Carlos A. Leyva Linares
+</div>
+
+<div id="letter-to-image">
+    <!-- El contenido de la carta se genera aquí para html2canvas -->
+</div>
+
+<script>
+    let students = JSON.parse(localStorage.getItem('sc_students') || '[]');
+    let logoData = localStorage.getItem('sc_logo') || '';
+    let signData = localStorage.getItem('sc_sign') || '';
+
+    const cy = document.getElementById('school-cycle');
+    for(let y=2024; y<=2045; y++) {
+        let o = document.createElement('option');
+        o.text = `${y}-${y+1}`;
+        cy.add(o);
+    }
+
+    document.getElementById('school-logo').onchange = (e) => {
+        const fr = new FileReader();
+        fr.onload = () => { logoData = fr.result; localStorage.setItem('sc_logo', logoData); };
+        if(e.target.files[0]) fr.readAsDataURL(e.target.files[0]);
+    };
+
+    document.getElementById('teacher-signature').onchange = (e) => {
+        const fr = new FileReader();
+        fr.onload = () => { signData = fr.result; localStorage.setItem('sc_sign', signData); };
+        if(e.target.files[0]) fr.readAsDataURL(e.target.files[0]);
+    };
+
+    function nextScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        if(id === 'screen-students') renderStudents();
+        if(id === 'screen-letter') {
+            const sel = document.getElementById('letter-student-select');
+            sel.innerHTML = '<option value="">-- Seleccionar Alumno --</option>';
+            students.forEach(s => {
+                let o = document.createElement('option');
+                o.value = s.id; o.text = s.name;
+                sel.add(o);
+            });
+        }
+    }
+
+    function saveStudent() {
+        const n = document.getElementById('student-name').value.trim();
+        const p = document.getElementById('parent-name').value.trim();
+        if(!n || !p) return;
+        students.push({id: Date.now(), name: n, parent: p});
+        localStorage.setItem('sc_students', JSON.stringify(students));
+        document.getElementById('student-name').value = '';
+        document.getElementById('parent-name').value = '';
+        renderStudents();
+    }
+
+    function renderStudents() {
+        const l = document.getElementById('student-list');
+        l.innerHTML = '';
+        students.forEach(s => {
+            let o = document.createElement('option');
+            o.value = s.id; o.text = `${s.name} | Tutor: ${s.parent}`;
+            l.add(o);
+        });
+    }
+
+    function deleteStudent() {
+        const l = document.getElementById('student-list');
+        if(!l.value) return;
+        students = students.filter(s => s.id != l.value);
+        localStorage.setItem('sc_students', JSON.stringify(students));
+        renderStudents();
+    }
+
+    function clearInputs(screenId) {
+        const sc = document.getElementById(screenId);
+        sc.querySelectorAll('input, select').forEach(i => i.value = '');
+    }
+
+    async function generateImage() {
+        const sid = document.getElementById('letter-student-select').value;
+        const dat = document.getElementById('letter-date').value;
+        if(!sid || !dat) {
+            alert("Por favor selecciona un alumno y una fecha.");
+            return;
+        }
+
+        const student = students.find(s => s.id == sid);
+        const school = document.getElementById('school-name').value;
+        const key = document.getElementById('school-key').value;
+        const grade = document.getElementById('school-grade').value;
+        const group = document.getElementById('school-group').value;
+
+        const d = new Date(dat);
+        const mes = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+        const fechaText = `${d.getDate() + 1} de ${mes[d.getMonth()]} del ${d.getFullYear()}`;
+
+        let clausesText = "";
+        const cMap = {
+            c1: "<b>Cláusula 1. Respeto y disciplina:</b> El alumno deberá mantener una conducta respetuosa hacia maestros, compañeros y personal de la institución, evitando cualquier tipo de agresión física, verbal o psicológica.",
+            c2: "<b>Cláusula 2. Cumplimiento del reglamento escolar:</b> El alumno se compromete a cumplir con las normas establecidas en el reglamento escolar dentro y fuera del aula.",
+            c3: "<b>Cláusula 3. Responsabilidad académica:</b> El alumno deberá cumplir con tareas, trabajos, evaluaciones y actividades escolares en tiempo y forma.",
+            c4: "<b>Cláusula 4. Puntualidad y asistencia:</b> El padre o tutor se compromete a garantizar la asistencia regular y puntual del alumno a clases.",
+            c5: "<b>Cláusula 5. Seguimiento familiar:</b> El padre o tutor dará seguimiento al comportamiento y desempeño académico del alumno, manteniendo comunicación constante con los docentes.",
+            c6: "<b>Cláusula 6. Medidas correctivas:</b> En caso de reincidir en conductas inapropiadas, el padre o tutor acepta que la institución aplique las medidas disciplinarias correspondientes conforme al reglamento escolar.",
+            c7: "<b>Cláusula 7. Colaboración con la institución:</b> El padre o tutor se compromete a acudir a reuniones, citatorios o entrevistas que la institución convoque para tratar asuntos relacionados con la conducta del alumno."
+        };
+
+        if(document.getElementById('check-agresiva').checked) {
+            const n = document.getElementById('num-llamada').value;
+            clausesText += `<p style="margin-bottom:8px">Me comprometo a vigilar la conducta de mi hijo y estar más pendiente a los llamados que la escuela me hace ya que está generando un conflicto; se ha observado una <b>Conducta Agresiva</b> y ya son <b>${n} veces</b> que se me hace la llamada de atención por este motivo en el presente mes, por lo que estaré más vigilante y acepto las disposiciones que la dirección de la escuela imparta si mi hijo se vuelve recurrente.</p>`;
+        }
+
+        document.querySelectorAll('#screen-letter input[type="checkbox"]:checked').forEach(cb => {
+            if(cMap[cb.value]) clausesText += `<p style="margin-bottom:6px">${cMap[cb.value]}</p>`;
+        });
+
+        const container = document.getElementById('letter-to-image');
+        container.innerHTML = `
+            <div style="margin-top: 5mm; display:flex; align-items:center; margin-bottom:15px;">
+                <img src="${logoData || 'https://via.placeholder.com/100'}" style="width:75px; height:75px; object-fit:contain; margin-right:20px;">
+                <div style="text-align:center; flex-grow:1;">
+                    <h1 style="margin:0; font-size:15pt;">${school.toUpperCase()}</h1>
+                    <p style="margin:0; font-size:9.5pt;">CLAVE: ${key} | ZONA: ${document.getElementById('school-zone').value} | SECTOR: ${document.getElementById('school-sector').value}</p>
+                    <p style="margin:0; font-size:9.5pt;">TURNO: ${document.getElementById('school-shift').value} | CICLO: ${document.getElementById('school-cycle').value}</p>
+                </div>
+            </div>
+
+            <h2 style="text-align:center; font-size:13pt; font-weight:bold; text-decoration:underline; margin-bottom:10px;">CARTA COMPROMISO</h2>
+            
+            <p style="text-align:right; margin-bottom:12px;">Acapulco, Gro. A ${fechaText}</p>
+
+            <div class="justified" style="font-size:10.5pt;">
+                <p style="margin-bottom:10px;">
+                    Yo <b>${student.parent.toUpperCase()}</b>, por medio de la presente, padre, madre o tutor de 
+                    <b>${student.name.toUpperCase()}</b>, quien cursa el <b>${grade} GRADO, GRUPO "${group}"</b> 
+                    en la escuela <b>${school}</b> con clave <b>${key}</b>, 
+                    hago constar que me comprometo a cumplir y apoyar las siguientes responsabilidades para favorecer el buen desempeño académico y disciplinario de mi hijo(a) bajo los siguientes acuerdos:
+                </p>
+
+                <div>${clausesText}</div>
+
+                <p style="margin-top:10px;">Entiendo que la educación de mi hijo(a) es una responsabilidad compartida entre la familia y la escuela, por lo que me comprometo a colaborar activamente. Sin más por el momento, firmo la presente para los fines correspondientes.</p>
+            </div>
+
+            <div style="margin-top: auto; padding-bottom: 20px;">
+                <div style="text-align:center; margin-bottom: 40px;">
+                    <div style="width:300px; border-top:1px solid black; margin:0 auto; padding-top:5px;">
+                        <b>${student.parent.toUpperCase()}</b><br>Firma del Padre o Tutor
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; text-align:center;">
+                    <div style="width:280px; position:relative;">
+                        ${signData ? `<img src="${signData}" style="position:absolute; top:-75px; left:50%; transform:translateX(-50%); height:85px; object-fit:contain;">` : ''}
+                        <div style="border-top:1px solid black; padding-top:5px;">
+                            <b>${document.getElementById('school-teacher').value}</b><br>Maestro(a) de Grupo
+                        </div>
+                    </div>
+                    <div style="width:280px;">
+                        <div style="border-top:1px solid black; padding-top:5px;">
+                            <b>${document.getElementById('school-director').value}</b><br>Director(a) de la Escuela
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        try {
+            // Renderizar a Canvas
+            const canvas = await html2canvas(container, { 
+                scale: 2, 
+                useCORS: true,
+                logging: false,
+                allowTaint: true
+            });
+            
+            // Convertir a Data URL
+            const imageURL = canvas.toDataURL("image/png");
+            
+            // Crear enlace de descarga compatible
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageURL;
+            downloadLink.download = `CARTA_${student.name.replace(/ /g,'_')}.png`;
+            
+            // Añadir al documento temporalmente (necesario para algunos navegadores móviles)
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+        } catch (err) {
+            console.error("Error al generar la imagen:", err);
+        }
+    }
+</script>
+</body>
+</html>
